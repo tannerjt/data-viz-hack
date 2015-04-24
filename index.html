@@ -24,6 +24,11 @@
         min-height: 100px; 
         max-height: 1000px; 
       }
+      .nopadding {
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+      
     </style>
 
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
@@ -55,19 +60,20 @@
       </div>
     </div>
 
-    <div class="container">
+    <div class="container-fluid">
 
-      <div class="starter-template">
-        <h1>Bootstrap starter template</h1>
-        <p class="lead">Use this document as a way to quickly start any new project.<br> All you get is this text and a mostly barebones HTML document.</p>
+      <div class="row">
+        <div class="col-md-3 nopadding">
+          
+        </div>
+        <div class="col-md-9 nopadding">
+          <!-- Bootstrap-map-js -->
+          <div id="mapDiv"></div>
+        </div>
+
       </div>
 
-      <!-- Bootstrap-map-js -->
-      <div id="mapDiv"></div>
-
-      <hr/>
-
-    </div><!-- /.container -->
+    </div><!-- /.container-fluid -->
 
     <script type="text/javascript">
       var package_path = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
