@@ -11,8 +11,47 @@ function (BootstrapMap, FeatureLayer, smartMapping) {
     scrollWheelZoom: false
   });
 
+  function layerFactory(url) {
+    var fLayer = new FeatureLayer(url, {
+      "mode" : FeatureLayer.MODE_SNAPSHOT,
+      "opacity" : 0.9
+    });
+    return fLayer;
+  };
+
+  function createRenderer(layer, radius, colors) {
+    // return promise .then
+    return smartMapping.createHeatmapRenderer({
+      layer : layer,
+      basemap : map.getBasemap(),
+      blurRadius : radius
+    });
+  };
+
+  var fl = null;
+  function addLayer(url, radius) {
+    if(fl) map.removeLayer(fl);
+    fl = layerFactory(url);
+    map.addLayer(fl);
+    fl.on("load", function () {
+      var renderer = createRenderer(fl, radius);
+      renderer.then(function (response) {
+        var cb = new classyBrew();
+        cb.setNumClasses(6);
+        cb.setColorCode($("#color-wrap input:checked").val());
+        var colors = cb.getColors();
+        var r = response.renderer;
+        colors[0] = colors[0].replace(")", ",0.2)");
+        r.setColors(colors);
+        fl.setRenderer(r);
+        fl.redraw();
+      })
+    });
+  }
+
   // Storm Types
   var dropdown = $("#storm-type");
+  var curStormUrl = null;
   $.each(services, function (i, service) {
     var option = $("<option />", {
       value : service.url,
@@ -20,6 +59,18 @@ function (BootstrapMap, FeatureLayer, smartMapping) {
     });
     dropdown.append(option);
   });
+  dropdown.on('change', function (e) {
+    var url = $(e.target).val();
+    curStormUrl = url;
+    // change featureLayer
+    var radius;
+    $.each(services, function (idx, l) {
+      if(l.url == url) {
+        radius = l.radius;
+      }
+    });
+    addLayer(url, radius);
+  })
   // Color ramp
   var colorViz = new classyBrew();
   colorViz.setNumClasses(5);
@@ -40,6 +91,17 @@ function (BootstrapMap, FeatureLayer, smartMapping) {
       input.attr('checked', 'true');
     }
     row.append(input);
+    input.on('click', function (e) {
+      var selectedColor = $(e.target).val();
+      // change color ramp
+      var radius;
+      $.each(services, function (idx, l) {
+        if(l.url == curStormUrl) {
+          radius = l.radius;
+        }
+      });
+      addLayer(curStormUrl, radius);
+    });
     $.each(colorViz.getColors(), function (i, rgb) {
       var col = $("<div />", {
         class : "col-md-2",
@@ -50,11 +112,7 @@ function (BootstrapMap, FeatureLayer, smartMapping) {
     $("#color-wrap").append(row);
   });
 
-  // Set initial options
-
-  // add featurelayer to map
-  function setActiveLayer(url) {
-    
-  }
-  setActiveLayer("http://192.241.200.140:1337/github/tannerkj/esri-data-viz/data::deadly_storm_locs/FeatureServer/0")
+  // initial add first layer in services obj
+  addLayer(services[0].url, services[0].radius);
+  curStormUrl = services[0].url;
 });
