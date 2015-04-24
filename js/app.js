@@ -1,8 +1,9 @@
 require(["application/bootstrapmap", 
          "esri/layers/FeatureLayer",
          "esri/renderers/smartMapping",
+         "esri/InfoTemplate",
          "dojo/domReady!"],
-function (BootstrapMap, FeatureLayer, smartMapping) {
+function (BootstrapMap, FeatureLayer, smartMapping, InfoTemplate) {
   // Get a reference to the ArcGIS Map class
   map = BootstrapMap.create("mapDiv", {
     basemap: "national-geographic",
@@ -11,13 +12,33 @@ function (BootstrapMap, FeatureLayer, smartMapping) {
     scrollWheelZoom: false
   });
 
+  var infoTemplate = new InfoTemplate();
+  infoTemplate.setTitle("${EVENT_TYPE}");
+  infoTemplate.setContent("<ul class='list-unstyled'>" + 
+                          "<li>Direct Injuries : ${INJURIES_D}</li>" + 
+                          "<li>Indirect Injuries : ${INJURIES_I}</li>" +
+                          "<li>Direct Deaths : ${DEATHS_DIR}</li>" +
+                          "<li>Indirect Deaths : ${DEATHS_IND}</li>" +
+                          "</ul>");
+
   function layerFactory(url) {
     var fLayer = new FeatureLayer(url, {
       "mode" : FeatureLayer.MODE_SNAPSHOT,
+      outFields  : ["*"],
       "opacity" : 0.9
     });
     return fLayer;
   };
+
+  function pointFactory(url) {
+    var fLayer = new FeatureLayer(url, {
+      "mode" : FeatureLayer.MODE_SNAPSHOT,
+      outFields  : ["*"],
+      infoTemplate : infoTemplate,
+      "opacity" : 0.9
+    });
+    return fLayer;
+  }
 
   function createRenderer(layer, radius, colors) {
     // return promise .then
@@ -29,9 +50,15 @@ function (BootstrapMap, FeatureLayer, smartMapping) {
   };
 
   var fl = null;
+  var fl2 = null;
   function addLayer(url, radius) {
     if(fl) map.removeLayer(fl);
+    if(fl2) map.removeLayer(fl2);
     fl = layerFactory(url);
+    if ($("#points").is(':checked')) {
+      fl2 = pointFactory(url);
+      map.addLayer(fl2);
+    }
     map.addLayer(fl);
     fl.on("load", function () {
       var renderer = createRenderer(fl, radius);
@@ -48,6 +75,17 @@ function (BootstrapMap, FeatureLayer, smartMapping) {
       })
     });
   }
+
+  $("#points").on('click', function () {
+      var radius;
+      $.each(services, function (idx, l) {
+        if(l.url == curStormUrl) {
+          radius = l.radius;
+        }
+      });
+      addLayer(curStormUrl, radius);
+  });
+
 
   // Storm Types
   var dropdown = $("#storm-type");

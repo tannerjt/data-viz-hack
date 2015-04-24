@@ -24,6 +24,9 @@
         min-height: 100px; 
         max-height: 1000px; 
       }
+      #about {
+        font-size : 13px;
+      }
       .nopadding {
         padding: 0 !important;
         margin: 0 !important;
@@ -34,6 +37,9 @@
       .glyphicon {
         vertical-align: middle;
         padding-bottom : 3px;
+      }
+      .lmargin {
+        margin-top : 0px;
       }
     </style>
 
@@ -76,14 +82,17 @@
             </select>
           </div>
           <div class="wrap">
-            <h3>Select Color Ramp</h3>
+            <input type="checkbox" val="points" id="points" /> Show Points
+          </div>
+          <div class="wrap">
+            <h3 class="lmargin">Select Color Ramp</h3>
             <div id="color-wrap">
               
             </div>
           </div>
           <div class="wrap">
             <h4>About</h4>
-            <p>
+            <p id="about">
             This application uses <a href="http://www.ncdc.noaa.gov/stormevents/ftp.jsp" target="_blank">NOAA Storm Data from 1996-2014</a> to help you visualize the density and distribution
             of storm types across the United States.  <b>Only storms that resulted in injuries or deaths 
             are included</b>.  Select a storm type and color ramp to begin analysis.
